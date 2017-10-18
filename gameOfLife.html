@@ -1,0 +1,134 @@
+<html>
+<body>
+<canvas id ="myCanvas" width="1000" height="1000" style="border:2px solid #000000; background-color: #FFFFFF;"></canvas>
+</br>
+fast<input id="slider1" type="range" min="100" max="300" />slow
+</body>
+<div id="content">
+</div>
+</br>
+Press 'space' to start. Or press 's' to step generation by generation.
+</br>
+Matthew Nelson
+</html>
+<script>
+
+
+function setup() {
+	var counter = 0;
+	var gameMode = 0;
+	var step = 0;
+	var cells = [];
+	var nextCells = [];
+	for(i = -1; i < 11; i++) {
+		cells[i] = [];
+		nextCells[i] = [];
+		for(j = -1; j < 11; j++) {
+			cells[i][j] = 0;
+			nextCells[i][j] = 0;
+		}
+	}
+	window.addEventListener("click", click, false);
+	window.addEventListener("keypress", onKeyDown, false);
+	function click(event){
+		var x = Math.floor(event.clientX / 100);
+		var y = Math.floor(event.clientY / 100);
+		if(gameMode == 0) {
+			if(cells[x][y]== 1) {
+				cells[x][y] = 0;
+			} else {
+				cells[x][y] = 1;
+			}
+			
+		}	
+	};
+
+	function onKeyDown(event){
+		var keyCode = event.keyCode;
+		if(keyCode == 32) {
+			if(gameMode == 0) {
+				gameMode = 1;
+			} else {
+				gameMode = 0;
+			}
+		}
+		if(keyCode == 115) {
+			step = 1;
+		}
+	};
+	
+	var canvas = document.getElementById('myCanvas');
+	function getNeighbors(x, y) {
+		var neighbors = 0;
+		neighbors = cells[x + 1][y] + cells[x - 1][y] + cells[x][y + 1] + cells[x][y - 1] + cells[x + 1][y + 1] + cells[x - 1][y - 1] + cells[x + 1][y - 1] + + cells[x - 1][y + 1];
+		return neighbors;
+	}
+	function copy(newCells) {
+		for(i = -1; i < 11; i++) {
+			cells[i] = [];
+			for(j = -1; j < 11; j++) {
+				cells[i][j] = newCells[i][j];			
+			}
+		}
+	}
+	
+	function life() {
+		var picture = canvas.getContext('2d');
+		canvas.width = canvas.width;
+		picture.strokeStyle = "#000000";
+		picture.fillStyle="#0A7129";
+		var speed = slider1.value;
+
+		for(i = 0; i < 10; i++) {
+			for(j = 0; j < 10; j++) {
+			var neighbors = getNeighbors(i, j);
+				if(cells[i][j] == 1) {
+					//draw 
+					picture.fillRect(100*i, 100*j, 100, 100);
+					picture.rect(100*i, 100*j, 100, 100);
+					picture.stroke();
+					//populate
+					if((counter % speed == speed - 1) || step == 1) {
+						if(neighbors < 2 || neighbors > 3) {
+							nextCells[i][j] = 0;
+						} else {
+							nextCells[i][j] = 1;
+						}
+					} else {
+						nextCells[i][j] = cells[i][j];
+					}
+				} else {
+					//draw
+					picture.rect(100*i, 100*j, 100, 100)
+					picture.stroke();
+					//populate
+					if(counter % speed == speed - 1 || step == 1) {
+						if(neighbors == 3) {
+							nextCells[i][j] = 1;
+						} else {
+							nextCells[i][j] = 0;
+						}
+					} else {
+						nextCells[i][j] = cells[i][j];
+					}
+				}
+			}
+		}
+		if(gameMode == 1) {
+			counter = counter + 1;
+			copy(nextCells);
+			document.getElementById('content').innerHTML = "GO";
+		} else if(step == 1 && gameMode == 0) {
+			step = 0;
+			copy(nextCells);
+		} else {
+			document.getElementById('content').innerHTML = "PAUSED";
+			counter = 0;
+		}
+		window.requestAnimationFrame(life);
+
+	};
+	window.requestAnimationFrame(life);
+};
+window.onload = setup();
+</script>
